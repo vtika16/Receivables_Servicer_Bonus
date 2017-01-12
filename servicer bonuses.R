@@ -5,6 +5,19 @@ misc_invoice_csv <- read.csv("/Users/vtika/Documents/misc invoice t2 total.csv",
 
 misc_invoice_total <- data.frame(misc_invoice_csv)
 
+##setting variables##
+
+DRV <- misc_invoice_total$MasterLease_Device_Residual_Value_at_Closing
+
+is.na(misc_invoice_total$MLS_Final_Rent_at_Closing) <- 0 
+
+##Calculate the device servicer bonus##
+
+misc_invoice_total$device.serv.bonus <- DRV * (1-(1/(1+.02/12) ^ misc_invoice_total$MLS_Standard_Rent_Billed_Months))
+
+
+
+
 #calculated field determining the month the customer cancelled their lease. This will 
 misc_invoice_total$Cancellation.Month <- misc_invoice_total$SubLease_Lease_Term - misc_invoice_total$MLS_Standard_Rent_Unbilled_Months
 
@@ -18,15 +31,19 @@ misc_invoice_total$Dt_final_Rent <- misc_invoice_total$MLS_Final_Rent_at_Closing
 misc_invoice_total$rec_servicer_bonus <- ((misc_invoice_total$MLS_Monthly_Rent_at_Closing - Dt_monthly_Rent) * (misc_invoice_total$Cancellation.Month - 2)) + (misc_invoice_total$MLS_Final_Rent_at_Closing - Dt_final_Rent)
 misc_invoice_total$rec_servicer_bonus[is.na(misc_invoice_total$rec_servicer_bonus)] <- 0
 
-sum(misc_invoice_total$rec_servicer_bonus)
-
-servicer_bonus_data <- misc_invoice_total[, c(misc_invoice_total$SubLease_Lease_Number)]
-
 write.csv(misc_invoice_total[, c("SubLease_Lease_Number", 
+                                 "SubLease_Handset_Model_Name",
+                                 "Serial_at_Closing",
+                                 "Misc.invoice.treatment.concatenated",
                                  "SubLease_Lease_Term",
-                                 "MasterLease_Device_Residual_Value_at_Closing",
                                  "MLS_Monthly_Rent_at_Closing",
                                  "MLS_Final_Rent_at_Closing",
-                                 "SubLease_Expiration_Month",
+                                 "MasterLease_Device_Residual_Value_at_Closing",
+                                 "MLS_Standard_Rent_Billed_Months" ,
+                                 "MLS_Standard_Rent_Unbilled_Months",
+                                 "Warehouse_Grade",
+                                 "DRV.at.Lease.Term",
                                  "Cancellation.Month",
+                                 "Servicing.Fee",
+                                 "device.serv.bonus",
                                  "rec_servicer_bonus")] ,file = "/Users/vtika/Documents/Servicer bonus.csv")
